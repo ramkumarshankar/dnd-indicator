@@ -23,22 +23,29 @@ import gobject
 import gtk
 import appindicator
 
+# Main class - Do not disturb indicator
+
 class Dnd:
   
   def __init__(self):
     self.ind = appindicator.Indicator ("dnd-indicator",
-                                       "/usr/share/icons/dnd-indicator/do-not-disturb-sign.png",
-                                       appindicator.CATEGORY_OTHER)
+                                       self.set_idle_icon(),
+                                       appindicator.CATEGORY_APPLICATION_STATUS)
     self.ind.set_status (appindicator.STATUS_ACTIVE)
-    self.ind.set_attention_icon ("/usr/share/icons/dnd-indicator/do-not-disturb-sign-busy.png")
+    self.ind.set_attention_icon (self.set_attention_icon())
     
     self.menu_setup()
     self.ind.set_menu(self.menu)
+
+  def set_idle_icon(self):
+    return os.path.dirname(os.path.realpath(__file__)) + os.path.sep + "icons" + os.path.sep + "do-not-disturb-sign.png"
+    
+  def set_attention_icon(self):
+    return os.path.dirname(os.path.realpath(__file__)) + os.path.sep + "icons" + os.path.sep + "do-not-disturb-sign-busy.png"
     
   def menu_setup(self):
     self.menu = gtk.Menu()
     self.dnd_item = gtk.CheckMenuItem("Do not disturb")
-    #self.dnd_item.set_active(False)
     self.dnd_item.connect("toggled", self.set_dnd)
     self.dnd_item.show()
     self.quit_item = gtk.MenuItem("Quit")
@@ -63,7 +70,7 @@ class Dnd:
     os.system(bashCommand)
 
   def quit(self, widget):
-    #enable notifications if they are not, before exit
+    # Enable notifications if they are not, before exit
     if self.dnd_item.get_active() == True:
       bashCommand = "sudo mv /usr/share/dbus-1/services/org.freedesktop.Notifications.service.disabled /usr/share/dbus-1/services/org.freedesktop.Notifications.service"
       os.system(bashCommand)
